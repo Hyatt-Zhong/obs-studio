@@ -5,8 +5,9 @@
 #include <util/base.h>
 #include <graphics/vec2.h>
 #include <media-io/audio-resampler.h>
-#include <obs.h>
 
+#include <obs.h>
+#include <map>
 #include <intrin.h>
 
 static const int cx = 800;
@@ -77,6 +78,12 @@ static void do_log(int log_level, const char *msg, va_list args, void *param)
 	UNUSED_PARAMETER(param);
 }
 
+static const char *module_bin = 
+	"../../win-capture" ;
+
+static const char *module_data = "../../data/obs-plugins/%module%";
+
+
 static void CreateOBS(HWND hwnd)
 {
 	RECT rc;
@@ -84,6 +91,9 @@ static void CreateOBS(HWND hwnd)
 
 	if (!obs_startup("en-US", nullptr, nullptr))
 		throw "Couldn't create OBS";
+
+	obs_remove_all_module_path();
+	obs_add_module_path(module_bin, module_data);
 
 	struct obs_video_info ovi;
 	ovi.adapter = 0;
@@ -120,7 +130,7 @@ static void AddTestItems(obs_scene_t *scene, obs_source_t *source)
 	obs_sceneitem_t *item = NULL;
 	struct vec2 scale;
 
-	vec2_set(&scale, 20.0f, 20.0f);
+	vec2_set(&scale, .8f, .8f);
 
 	item = obs_scene_add(scene, source);
 	obs_sceneitem_set_scale(item, &scale);
@@ -181,17 +191,45 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR cmdLine,
 		/* ------------------------------------------------------ */
 		/* create source */
 		SourceContext source = obs_source_create(
-			"random", "some randon source", NULL, nullptr);
+			"window_capture", "window_capture", NULL, nullptr);
 		if (!source)
 			throw "Couldn't create random test source";
 
+		auto pp=obs_source_properties(source);
+		auto p = obs_properties_get(pp, "window");
+		size_t count = obs_property_list_item_count(p);
+		
+		std::map<int, std::pair<const char *,const char*>> mp;
+		for (size_t i = 0; i < count; i++) {
+			const char *name = obs_property_list_item_name(p, i);
+			const char *str = obs_property_list_item_string(p, i);
+			auto pr = std::make_pair(name, str);
+			mp[(int)i] = pr;
+		}
+
+		auto s = obs_source_get_settings(source);
+
+		//int method = (int)obs_data_get_int(s, "method");
+		obs_data_set_int(s, "method", 0);
+		auto str = mp[0].second;
+		obs_data_set_string(s, "window", str);
+		obs_data_set_int(s, "priority",0);
+
+		obs_data_set_bool(s, "cursor", true);
+		obs_data_set_bool(s, "use_wildcards",false);
+		obs_data_set_bool(s, "compatibility",false);
+		obs_data_set_bool(s, "client_area",true);
+
+		obs_property_modified(p, s);
+		
+
 		/* ------------------------------------------------------ */
 		/* create filter */
-		SourceContext filter = obs_source_create(
+		/*SourceContext filter = obs_source_create(
 			"test_filter", "a nice green filter", NULL, nullptr);
 		if (!filter)
 			throw "Couldn't create test filter";
-		obs_source_filter_add(source, filter);
+		obs_source_filter_add(source, filter);*/
 
 		/* ------------------------------------------------------ */
 		/* create scene and add source to scene (twice) */

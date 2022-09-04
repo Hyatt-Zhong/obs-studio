@@ -1,5 +1,5 @@
 
-if(BUILD_TESTS)
+if(BUILD_OBS_TESTS)
 	add_subdirectory(test-input)
 
 	if(WIN32)

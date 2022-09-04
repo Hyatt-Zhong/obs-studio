@@ -83,6 +83,7 @@ else()
 endif()
 
 # Binary Versioning for Windows
+set(OBS_VERSION "27.0.0.0")
 if(WIN32)
 	string(REPLACE "-" ";" UI_VERSION_SPLIT ${OBS_VERSION})
 	list(GET UI_VERSION_SPLIT 0 UI_VERSION)
@@ -228,8 +229,10 @@ if(LOWERCASE_CMAKE_SYSTEM_PROCESSOR MATCHES "e2k")
 	endforeach()
 endif()
 
-option(BUILD_TESTS "Build test directory (includes test sources and possibly a platform test executable)" FALSE)
-mark_as_advanced(BUILD_TESTS)
+option(BUILD_OBS_TESTS "--" ON)
+
+#mark_as_advanced(BUILD_OBS_TESTS)
+
 
 if(NOT INSTALLER_RUN)
 	option(ENABLE_UI "Enables the OBS user interfaces" ON)
@@ -272,8 +275,10 @@ if(NOT INSTALLER_RUN)
 	if (ENABLE_UNIT_TESTS)
 		enable_testing()
 	endif()
-
-	if (BUILD_TESTS OR ENABLE_UNIT_TESTS)
+	
+	message("#####A#####")
+	if (BUILD_OBS_TESTS OR ENABLE_UNIT_TESTS)
+		message("ADD TEST")
 		add_subdirectory(test)
 	endif()
 else()
