@@ -286,3 +286,5 @@ else()
 endif()
 
 include(CopyMSVCBins)
+
+add_subdirectory(winfo-capture)
