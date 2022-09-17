@@ -82,10 +82,26 @@ void ScreenshotObj::Copy()
 {
 	uint8_t *videoData = nullptr;
 	uint32_t videoLinesize = 0;
+	//数据源格式是abgr，CImage格式是argb 所以需要把r跟b交换一下
+	auto bit_move = [](unsigned int *val) {
+		auto &x = *val;
+
+		auto b = x & 0x00ff0000;
+		auto r = x & 0x000000ff;
+
+		x &= 0xff00ff00; //-r -b 去掉红蓝色
+
+		b >>= 16;
+		r <<= 16;
+
+		x |= b;
+		x |= r;
+
+		return;
+	};
 
 	CImage image;
 	image.Create(cx, -cy, 32);
-
 	if (gs_stagesurface_map(stagesurf, &videoData, &videoLinesize)) {
 		/*int linesize = image.bytesPerLine();
 		for (int y = 0; y < (int)cy; y++)
@@ -96,6 +112,12 @@ void ScreenshotObj::Copy()
 			memcpy(image.GetPixelAddress(0,y),
 			       videoData + (y * videoLinesize), linesize);
 
+		auto first = image.GetPixelAddress(0, 0);
+		for (auto i = 0; i < cx * cy; i++) {
+			bit_move((unsigned int *)((unsigned int *)first + i));
+		}
+		
+
 		gs_stagesurface_unmap(stagesurf);
 		time_t now = time(NULL);
 		tm *tm_t = localtime(&now);
@@ -105,8 +127,8 @@ void ScreenshotObj::Copy()
 		   << tm_t->tm_hour << tm_t->tm_min
 		   << tm_t->tm_sec;
 
-		std::wstring path = save_path_ + L"\\" + ss.str() + L".jpg";
-		image.Save(path.c_str(), Gdiplus::ImageFormatJPEG);
+		std::wstring path = save_path_ + L"\\" + ss.str() + L".png";
+		image.Save(path.c_str(), Gdiplus::ImageFormatPNG);
 	}
 }
 
