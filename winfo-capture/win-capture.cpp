@@ -8,6 +8,8 @@
 
 using namespace std;
 
+namespace ns_win_capture {
+
 static const char *module_bin = "../../win-capture";
 
 static const char *module_data = "../../data/obs-plugins/%module%";
@@ -115,6 +117,7 @@ void GetScaleAndCenterPos(int baseCX, int baseCY, int windowCX, int windowCY,
 	y = windowCY / 2 - newCY / 2;
 }
 
+//绘制回调，每帧调用
 void DrawPreview(void *data, uint32_t cx, uint32_t cy)
 {
 	wc_data *dt = (wc_data *)data;
@@ -152,7 +155,7 @@ void DrawPreview(void *data, uint32_t cx, uint32_t cy)
 
 	gs_ortho(0.0f, float(sourceCX), 0.0f, float(sourceCY), -100.0f, 100.0f);
 	gs_set_viewport(x, y, newCX, newCY);
-	obs_source_video_render(source);
+	obs_source_video_render(source); //这里真正的绘制数据
 
 	gs_set_linear_srgb(previous);
 	gs_projection_pop();
@@ -181,7 +184,7 @@ void add_cmd(std::map<int, std::pair<const char *, const char *>> *mp,
 	     const char *cmd, void (*pfunc)(void *))
 {
 	auto index = mp->size();
-	auto pr = std::make_pair(cmd, (char*)pfunc);
+	auto pr = std::make_pair(cmd, (char *)pfunc);
 	(*mp)[(int)index] = pr;
 	cout << index << ": " << cmd << endl;
 }
@@ -202,8 +205,7 @@ string select_source(obs_source_t *source)
 	}
 	auto cur_path = filesystem::current_path();
 	wstring save_dir = wstring(cur_path.c_str()) + L"\\screenshot";
-	if (!filesystem::is_directory(save_dir))
-	{
+	if (!filesystem::is_directory(save_dir)) {
 		filesystem::create_directory(save_dir);
 	}
 
@@ -215,7 +217,7 @@ string select_source(obs_source_t *source)
 		ss_param *sp = (ss_param *)param;
 		new ScreenshotObj(sp->source, sp->save_path);
 		delete sp;
-		});
+	});
 	auto mp_count = mp.size();
 	int no = -1;
 	auto con = no < 0 || no >= mp_count;
@@ -306,5 +308,6 @@ void windows_msg_loop(condition_variable *cv, wc_data *data)
 		DispatchMessage(&msg);
 	}
 }
+};
 
 

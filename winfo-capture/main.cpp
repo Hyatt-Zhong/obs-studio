@@ -1,9 +1,12 @@
 #include "win-capture.h"
+#include "audio-capture.h"
 
 #include <shellscalingapi.h>
 
 #pragma comment(lib, "Shcore.lib")
 using namespace std;
+using namespace ns_win_capture;
+using namespace ns_audio_capture;
 
 void main()
 {
@@ -32,6 +35,7 @@ void main()
 	add_source_to_scene(s, sc);
 	set_output_source(obs_scene_get_source(sc));
 
+	load_audio();
 	while (true) {
 		auto window = select_source(s);
 		modify_source(s, window.c_str());
