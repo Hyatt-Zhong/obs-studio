@@ -500,6 +500,7 @@ bool WASAPISource::ProcessCaptureData()
 	UINT64 pos, ts;
 	UINT captureSize = 0;
 
+	auto blocksize = obs_source_get_blocksize();
 	while (true) {
 		res = capture->GetNextPacketSize(&captureSize);
 
@@ -527,7 +528,10 @@ bool WASAPISource::ProcessCaptureData()
 			return false;
 		}
 
-		obs_source_audio data = {};
+		obs_source_data_handle(source, (void *)buffer,
+				       frames * blocksize);
+
+		/*obs_source_audio data = {};
 		data.data[0] = (const uint8_t *)buffer;
 		data.frames = (uint32_t)frames;
 		data.speakers = speakers;
@@ -539,7 +543,7 @@ bool WASAPISource::ProcessCaptureData()
 			data.timestamp -= util_mul_div64(frames, 1000000000ULL,
 							 sampleRate);
 
-		obs_source_output_audio(source, &data);
+		obs_source_output_audio(source, &data);*/
 
 		capture->ReleaseBuffer(frames);
 	}

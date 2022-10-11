@@ -1296,6 +1296,11 @@ EXPORT void obs_source_set_video_frame2(obs_source_t *source,
 /** Outputs audio data (always asynchronous) */
 EXPORT void obs_source_output_audio(obs_source_t *source,
 				    const struct obs_source_audio *audio);
+typedef void (*data_handle)(obs_source_t *source, void *data, int len,
+			    void *param);
+EXPORT void obs_source_data_handle(obs_source_t *source, void *data, int len);
+EXPORT void obs_source_set_data_handle(data_handle hdl, void *param);
+EXPORT size_t obs_source_get_blocksize();
 
 /** Signal an update to any currently used properties via 'update_properties' */
 EXPORT void obs_source_update_properties(obs_source_t *source);

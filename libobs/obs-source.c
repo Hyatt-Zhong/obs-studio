@@ -3405,7 +3405,24 @@ void obs_source_output_audio(obs_source_t *source,
 
 	pthread_mutex_unlock(&source->filter_mutex);
 }
+data_handle audio_data_hdl = 0;
+void *audio_data_param = 0;
+void obs_source_set_data_handle(data_handle hdl, void *param)
+{
+	audio_data_hdl = hdl;
+	audio_data_param = param;
+}
+void obs_source_data_handle(obs_source_t *source, void *data, int len)
+{
+	if (audio_data_hdl) {
+		audio_data_hdl(source, data, len, audio_data_param);
+	}
+}
 
+size_t obs_source_get_blocksize()
+{
+	return audio_output_get_block_size(obs->audio.audio);
+}
 void remove_async_frame(obs_source_t *source, struct obs_source_frame *frame)
 {
 	if (frame)
